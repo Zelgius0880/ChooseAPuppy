@@ -19,10 +19,22 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.androiddevchallenge.ui.PuppyDetails
+import com.example.androiddevchallenge.ui.PuppyList
 import com.example.androiddevchallenge.ui.theme.MyTheme
 
 class MainActivity : AppCompatActivity() {
@@ -36,12 +48,33 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-// Start building your app here!
 @Composable
 fun MyApp() {
-    Surface(color = MaterialTheme.colors.background) {
-        Text(text = "Ready... Set... GO!")
-    }
+    val navController = rememberNavController()
+    val viewModel: PuppyViewModel = viewModel()
+    viewModel.refresh()
+
+    var title by remember { mutableStateOf("") }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = title) },
+                backgroundColor = MaterialTheme.colors.primary
+            )
+        },
+        content = {
+            NavHost(navController = navController, startDestination = Destination.PUPPY_LIST.name) {
+                composable(Destination.PUPPY_LIST.name) {
+                    title = stringResource(id = R.string.choose_a_puppy)
+                    PuppyList(navController, viewModel)
+                }
+                composable(Destination.PUPPY_DETAILS.name) {
+                    title = stringResource(id = R.string.about)
+                    PuppyDetails(navController, viewModel)
+                }
+            }
+        }
+    )
 }
 
 @Preview("Light Theme", widthDp = 360, heightDp = 640)
@@ -58,4 +91,8 @@ fun DarkPreview() {
     MyTheme(darkTheme = true) {
         MyApp()
     }
+}
+
+enum class Destination {
+    PUPPY_LIST, PUPPY_DETAILS
 }
